@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Combustible · Las Colinas</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f0;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a2e1a 0%, #2d4a2d 100%);
+    padding: 16px 20px 14px;
+    text-align: center;
+  }
+  .header h1 {
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .header p {
+    color: #9fca9f;
+    font-size: .8rem;
+    margin-top: 2px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: #fff;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  .tab {
+    flex: 1;
+    padding: 13px 0;
+    text-align: center;
+    font-size: .88rem;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all .2s;
+  }
+  .tab.active { color: #2d4a2d; border-bottom-color: #2d4a2d; }
+
+  /* CONTENIDO */
+  .content { display: none; padding: 16px; max-width: 480px; margin: 0 auto; }
+  .content.active { display: block; }
+
+  /* STOCK CARDS */
+  .stock-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stock-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,.08);
+  }
+  .stock-label { font-size: .75rem; color: #888; text-transform: uppercase; letter-spacing: .05em; }
+  .stock-val { font-size: 1.7rem; font-weight: 700; color: #1a2e1a; margin: 4px 0 2px; }
+  .stock-sub { font-size: .72rem; color: #aaa; }
+
+  /* FORM */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.08);
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: .8rem;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 12px;
+  }
+
+  /* PERSONA SELECTOR */
+  .personas { display: flex; gap: 10px; flex-wrap: wrap; }
+  .persona {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 60px;
+  }
+  .persona-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #e8f0e8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    border: 3px solid transparent;
+    transition: all .2s;
+  }
+  .persona.selected .persona-avatar {
+    background: #2d4a2d;
+    border-color: #1a2e1a;
+  }
+  .persona-name {
+    font-size: .68rem;
+    color: #666;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .persona.selected .persona-name { color: #1a2e1a; font-weight: 700; }
+
+  /* TIPO COMBUSTIBLE */
+  .tipo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tipo-btn {
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    background: #fafafa;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .tipo-btn .tipo-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+  .tipo-btn .tipo-name { font-size: .82rem; font-weight: 600; color: #555; }
+  .tipo-btn.selected { border-color: #2d4a2d; background: #e8f5e8; }
+  .tipo-btn.selected .tipo-name { color: #1a2e1a; }
+
+  /* DESTINO */
+  .destinos { display: flex; flex-direction: column; gap: 8px; }
+  .destino-btn {
+    padding: 11px 14px;
+    border-radius: 9px;
+    border: 1.5px solid #e8e8e8;
+    background: #fafafa;
+    text-align: left;
+    font-size: .85rem;
+    color: #555;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .destino-btn.selected { border-color: #2d4a2d; background: #e8f5e8; color: #1a2e1a; font-weight: 600; }
+  .destino-btn.hidden { display: none; }
+
+  /* INPUT CANTIDAD */
+  .qty-row { display: flex; align-items: center; gap: 12px; }
+  .qty-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: #e8f0e8;
+    font-size: 1.4rem;
+    color: #2d4a2d;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .qty-input {
+    flex: 1;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 10px;
+    color: #1a2e1a;
+    outline: none;
+  }
+  .qty-input:focus { border-color: #2d4a2d; }
+  .qty-unit { font-size: .85rem; color: #888; flex-shrink: 0; }
+
+  /* OBS */
+  .obs-input {
+    width: 100%;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: .88rem;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    color: #333;
+  }
+  .obs-input:focus { border-color: #2d4a2d; }
+
+  /* BOTÓN REGISTRAR */
+  .btn-registrar {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #1a2e1a, #2d4a2d);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity .2s;
+  }
+  .btn-registrar:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* HISTORIAL */
+  .hist-filters { display: flex; gap: 8px; margin-bottom: 12px; }
+  .hist-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #ddd;
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    color: #888;
+  }
+  .hist-chip.active { background: #2d4a2d; border-color: #2d4a2d; color: #fff; }
+
+  .hist-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .hist-badge {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .hist-badge.salida { background: #fce8e8; color: #c0392b; }
+  .hist-badge.ingreso { background: #e8f5e8; color: #1a6e1a; }
+  .hist-info { flex: 1; }
+  .hist-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .hist-titulo { font-size: .88rem; font-weight: 600; color: #222; }
+  .hist-qty { font-size: .9rem; font-weight: 700; }
+  .hist-qty.salida { color: #c0392b; }
+  .hist-qty.ingreso { color: #1a6e1a; }
+  .hist-meta { font-size: .75rem; color: #999; margin-top: 2px; }
+  .hist-del {
+    background: none; border: none; color: #ccc; font-size: 1rem;
+    cursor: pointer; padding: 2px 6px; flex-shrink: 0;
+  }
+  .hist-del:hover { color: #e74c3c; }
+  .hist-empty { text-align: center; color: #bbb; padding: 30px; font-size: .9rem; }
+
+  /* TOAST */
+  #toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #2d4a2d; color: #fff; padding: 12px 22px;
+    border-radius: 25px; font-size: .88rem; font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999; white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.error { background: #c0392b; }
+
+  /* LOADING */
+  .loading { opacity: .5; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⛽ Control de Combustible</h1>
+  <p>Estancia Las Colinas · Ganadera Las Colinas</p>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('salida')">▼ Registrar Salida</div>
+  <div class="tab" onclick="switchTab('ingreso')">▲ Ingreso Bodega</div>
+  <div class="tab" onclick="switchTab('historial')">📋 Historial</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 1: SALIDA
+══════════════════════════════════════════════════════ -->
+<div class="content active" id="tab-salida">
+
+  <!-- Stock en tiempo real -->
+  <div class="stock-row" id="stock-row">
+    <div class="stock-card">
+      <div class="stock-label">Diesel disponible</div>
+      <div class="stock-val" id="stock-diesel">–</div>
+      <div class="stock-sub">litros</div>
+    </div>
+    <div class="stock-card">
+      <div class="stock-label">Gasolina disponible</div>
+      <div class="stock-val" id="stock-gasolina">–</div>
+      <div class="stock-sub">litros</div>
+    </div>
+  </div>
+
+  <!-- Persona -->
+  <div class="card">
+    <div class="card-title">¿Quién retira?</div>
+    <div class="personas" id="personas-salida">
+      <div class="persona" onclick="selPersona(this,'salida')" data-nombre="Manuel Vásquez">
+        <div class="persona-avatar">👨‍💼</div>
+        <div class="persona-name">Manuel<br>Vásquez</div>
+      </div>
+      <div class="persona" onclick="selPersona(this,'salida')" data-nombre="Fernando González">
+        <div class="persona-avatar">👷</div>
+        <div class="persona-name">Fernando<br>González</div>
+      </div>
+      <div class="persona" onclick="selPersona(this,'salida')" data-nombre="Raúl Álvarez">
+        <div class="persona-avatar">🧑‍🌾</div>
+        <div class="persona-name">Raúl<br>Álvarez</div>
+      </div>
+      <div class="persona" onclick="selPersona(this,'salida')" data-nombre="José Cárdenas">
+        <div class="persona-avatar">🧑‍🔧</div>
+        <div class="persona-name">José<br>Cárdenas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tipo combustible -->
+  <div class="card">
+    <div class="card-title">Tipo de combustible</div>
+    <div class="tipo-row">
+      <div class="tipo-btn" onclick="selTipo(this,'diesel')" id="btn-diesel-s">
+        <span class="tipo-icon">🛢️</span>
+        <span class="tipo-name">Diesel</span>
+      </div>
+      <div class="tipo-btn" onclick="selTipo(this,'gasolina')" id="btn-gasolina-s">
+        <span class="tipo-icon">⛽</span>
+        <span class="tipo-name">Gasolina</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Destino -->
+  <div class="card" id="card-destino" style="display:none">
+    <div class="card-title">Destino</div>
+    <div class="destinos" id="destinos-container"></div>
+  </div>
+
+  <!-- Cantidad -->
+  <div class="card">
+    <div class="card-title">Cantidad</div>
+    <div class="qty-row">
+      <button class="qty-btn" onclick="cambiarQty(-5)">−</button>
+      <input class="qty-input" type="number" id="qty-salida" value="20" min="1" max="2000">
+      <button class="qty-btn" onclick="cambiarQty(+5)">+</button>
+      <span class="qty-unit">litros</span>
+    </div>
+  </div>
+
+  <!-- Obs -->
+  <div class="card">
+    <div class="card-title">Observación (opcional)</div>
+    <textarea class="obs-input" id="obs-salida" rows="2" placeholder="Ej: tanque lleno, trabajo en potrero norte..."></textarea>
+  </div>
+
+  <button class="btn-registrar" onclick="registrarSalida()">Registrar Salida</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 2: INGRESO
+══════════════════════════════════════════════════════ -->
+<div class="content" id="tab-ingreso">
+
+  <div class="card">
+    <div class="card-title">¿Quién ingresa?</div>
+    <div class="personas" id="personas-ingreso">
+      <div class="persona" onclick="selPersona(this,'ingreso')" data-nombre="Fernando González">
+        <div class="persona-avatar">👷</div>
+        <div class="persona-name">Fernando<br>González</div>
+      </div>
+      <div class="persona" onclick="selPersona(this,'ingreso')" data-nombre="Manuel Vásquez">
+        <div class="persona-avatar">👨‍💼</div>
+        <div class="persona-name">Manuel<br>Vásquez</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Tipo de combustible</div>
+    <div class="tipo-row">
+      <div class="tipo-btn" onclick="selTipoIngreso(this,'diesel')">
+        <span class="tipo-icon">🛢️</span>
+        <span class="tipo-name">Diesel</span>
+      </div>
+      <div class="tipo-btn" onclick="selTipoIngreso(this,'gasolina')">
+        <span class="tipo-icon">⛽</span>
+        <span class="tipo-name">Gasolina</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cantidad</div>
+    <div class="qty-row">
+      <button class="qty-btn" onclick="cambiarQtyIngreso(-50)">−</button>
+      <input class="qty-input" type="number" id="qty-ingreso" value="500" min="1" max="10000">
+      <button class="qty-btn" onclick="cambiarQtyIngreso(+50)">+</button>
+      <span class="qty-unit">litros</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Proveedor / Referencia (opcional)</div>
+    <textarea class="obs-input" id="obs-ingreso" rows="2" placeholder="Ej: COPEC Porvenir, factura 001..."></textarea>
+  </div>
+
+  <button class="btn-registrar" onclick="registrarIngreso()" style="background:linear-gradient(135deg,#1a4a1a,#2d7a2d)">
+    Registrar Ingreso a Bodega
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 3: HISTORIAL
+══════════════════════════════════════════════════════ -->
+<div class="content" id="tab-historial">
+  <div class="hist-filters">
+    <div class="hist-chip active" onclick="filtrarHist('todo',this)">Todo</div>
+    <div class="hist-chip" onclick="filtrarHist('hoy',this)">Hoy</div>
+    <div class="hist-chip" onclick="filtrarHist('diesel',this)">Diesel</div>
+    <div class="hist-chip" onclick="filtrarHist('gasolina',this)">Gasolina</div>
+  </div>
+  <div id="hist-lista"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG SUPABASE ─────────────────────────────────────────────────────────
+var SUPA_URL = 'https://kuxcymapgzmumclokqgj.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1eGN5bWFwZ3ptdW1jbG9rcWdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwOTYyNjgsImV4cCI6MjA5MzY3MjI2OH0.l4pYcQBgrGCD6YpknEOxffOL6votDyWy43HrVSt31xA';
+
+function sbFetch(path, opts) {
+  opts = opts || {};
+  var method = opts.method || 'GET';
+  var headers = {
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type': 'application/json'
+  };
+  if (method === 'POST')   headers['Prefer'] = 'return=representation';
+  if (method === 'DELETE') headers['Prefer'] = 'return=minimal';
+  if (opts.prefer !== undefined) headers['Prefer'] = opts.prefer;
+  return fetch(SUPA_URL + '/rest/v1/' + path, {
+    method: method,
+    headers: headers,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+}
+
+// ── ESTADO ──────────────────────────────────────────────────────────────────
+var estado = {
+  personaSalida: null,
+  personaIngreso: null,
+  tipoSalida: null,
+  tipoIngreso: null,
+  destino: null,
+  histFiltro: 'todo'
+};
+
+var DESTINOS = {
+  diesel: [
+    'Tractor New Holland',
+    'Tractor Massey Ferguson',
+    'Camioneta Ford F150',
+    'Camioneta Toyota Hilux',
+    'Retroexcavadora',
+    'Moto Bomba',
+    'Generador',
+    'Otro'
+  ],
+  gasolina: [
+    'Moto 1',
+    'Moto 2',
+    'Motosierra',
+    'Bordeadora',
+    'Otro'
+  ]
+};
+
+// ── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.content').forEach(function(c) { c.classList.remove('active'); });
+  var idx = tab === 'salida' ? 0 : tab === 'ingreso' ? 1 : 2;
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'historial') cargarHistorial();
+  if (tab === 'salida') cargarStock();
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg, tipo) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = tipo === 'error' ? 'show error' : 'show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.className = ''; }, 3000);
+}
+
+// ── SELECCIONES ──────────────────────────────────────────────────────────────
+function selPersona(el, modo) {
+  var container = document.getElementById('personas-' + modo);
+  container.querySelectorAll('.persona').forEach(function(p) { p.classList.remove('selected'); });
+  el.classList.add('selected');
+  if (modo === 'salida') estado.personaSalida = el.dataset.nombre;
+  else estado.personaIngreso = el.dataset.nombre;
+}
+
+function selTipo(el, tipo) {
+  document.getElementById('btn-diesel-s').classList.remove('selected');
+  document.getElementById('btn-gasolina-s').classList.remove('selected');
+  el.classList.add('selected');
+  estado.tipoSalida = tipo;
+  estado.destino = null;
+  // Mostrar destinos
+  var card = document.getElementById('card-destino');
+  var container = document.getElementById('destinos-container');
+  container.innerHTML = '';
+  card.style.display = 'block';
+  DESTINOS[tipo].forEach(function(d) {
+    var btn = document.createElement('div');
+    btn.className = 'destino-btn';
+    btn.textContent = d;
+    btn.onclick = function() {
+      container.querySelectorAll('.destino-btn').forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      estado.destino = d;
+    };
+    container.appendChild(btn);
+  });
+}
+
+function selTipoIngreso(el, tipo) {
+  el.closest('.tipo-row').querySelectorAll('.tipo-btn').forEach(function(b) { b.classList.remove('selected'); });
+  el.classList.add('selected');
+  estado.tipoIngreso = tipo;
+}
+
+// ── CANTIDAD ─────────────────────────────────────────────────────────────────
+function cambiarQty(delta) {
+  var inp = document.getElementById('qty-salida');
+  var v = (parseInt(inp.value) || 0) + delta;
+  inp.value = Math.max(1, v);
+}
+function cambiarQtyIngreso(delta) {
+  var inp = document.getElementById('qty-ingreso');
+  var v = (parseInt(inp.value) || 0) + delta;
+  inp.value = Math.max(1, v);
+}
+
+// ── STOCK ────────────────────────────────────────────────────────────────────
+function cargarStock() {
+  // Calcula stock: ingresos - salidas por tipo
+  calcStock('diesel', 'stock-diesel');
+  calcStock('gasolina', 'stock-gasolina');
+}
+
+function calcStock(tipo, elId) {
+  var el = document.getElementById(elId);
+  el.textContent = '...';
+  var pIng = sbFetch('combustible_ingresos?tipo=eq.' + tipo + '&select=litros')
+    .then(function(r) { return r.json(); });
+  var pSal = sbFetch('combustible_salidas?tipo=eq.' + tipo + '&select=litros')
+    .then(function(r) { return r.json(); });
+  Promise.all([pIng, pSal]).then(function(results) {
+    var ing = results[0].reduce(function(a, r) { return a + (r.litros || 0); }, 0);
+    var sal = results[1].reduce(function(a, r) { return a + (r.litros || 0); }, 0);
+    var stock = ing - sal;
+    el.textContent = stock.toLocaleString('es-CL');
+    el.style.color = stock < 200 ? '#c0392b' : '#1a2e1a';
+  }).catch(function() { el.textContent = '–'; });
+}
+
+// ── REGISTRAR SALIDA ─────────────────────────────────────────────────────────
+function registrarSalida() {
+  if (!estado.personaSalida) return toast('Selecciona quién retira', 'error');
+  if (!estado.tipoSalida)   return toast('Selecciona el tipo de combustible', 'error');
+  if (!estado.destino)      return toast('Selecciona el destino', 'error');
+  var litros = parseInt(document.getElementById('qty-salida').value) || 0;
+  if (litros < 1) return toast('Ingresa una cantidad válida', 'error');
+
+  var btn = document.querySelector('#tab-salida .btn-registrar');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  sbFetch('combustible_salidas', {
+    method: 'POST',
+    body: {
+      persona: estado.personaSalida,
+      tipo: estado.tipoSalida,
+      destino: estado.destino,
+      litros: litros,
+      obs: document.getElementById('obs-salida').value.trim(),
+      fecha: new Date().toISOString()
+    }
+  }).then(function(r) {
+    if (!r.ok) return r.text().then(function(t) { throw new Error('HTTP ' + r.status + ': ' + t); });
+    toast('✓ Salida registrada — ' + litros + ' L de ' + estado.tipoSalida);
+    // Reset
+    document.querySelectorAll('#tab-salida .persona').forEach(function(p) { p.classList.remove('selected'); });
+    document.querySelectorAll('#tab-salida .tipo-btn').forEach(function(b) { b.classList.remove('selected'); });
+    document.querySelectorAll('.destino-btn').forEach(function(b) { b.classList.remove('selected'); });
+    document.getElementById('obs-salida').value = '';
+    estado.personaSalida = null; estado.tipoSalida = null; estado.destino = null;
+    document.getElementById('card-destino').style.display = 'none';
+    cargarStock();
+  }).catch(function(e) {
+    toast('Error: ' + e.message, 'error');
+    console.error('Error completo:', e);
+  }).finally(function() {
+    btn.disabled = false;
+    btn.textContent = 'Registrar Salida';
+  });
+}
+
+// ── REGISTRAR INGRESO ────────────────────────────────────────────────────────
+function registrarIngreso() {
+  if (!estado.personaIngreso) return toast('Selecciona quién ingresa', 'error');
+  if (!estado.tipoIngreso)   return toast('Selecciona el tipo de combustible', 'error');
+  var litros = parseInt(document.getElementById('qty-ingreso').value) || 0;
+  if (litros < 1) return toast('Ingresa una cantidad válida', 'error');
+
+  var btn = document.querySelector('#tab-ingreso .btn-registrar');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  sbFetch('combustible_ingresos', {
+    method: 'POST',
+    body: {
+      persona: estado.personaIngreso,
+      tipo: estado.tipoIngreso,
+      litros: litros,
+      proveedor: document.getElementById('obs-ingreso').value.trim(),
+      fecha: new Date().toISOString()
+    }
+  }).then(function(r) {
+    if (!r.ok) throw new Error();
+    toast('✓ Ingreso registrado — ' + litros + ' L de ' + estado.tipoIngreso);
+    document.querySelectorAll('#tab-ingreso .persona').forEach(function(p) { p.classList.remove('selected'); });
+    document.querySelectorAll('#tab-ingreso .tipo-btn').forEach(function(b) { b.classList.remove('selected'); });
+    document.getElementById('obs-ingreso').value = '';
+    document.getElementById('qty-ingreso').value = '500';
+    estado.personaIngreso = null; estado.tipoIngreso = null;
+    cargarStock();
+  }).catch(function() {
+    toast('Error al guardar. Revisa conexión.', 'error');
+  }).finally(function() {
+    btn.disabled = false;
+    btn.textContent = 'Registrar Ingreso a Bodega';
+  });
+}
+
+// ── HISTORIAL ────────────────────────────────────────────────────────────────
+var historialData = [];
+
+function cargarHistorial() {
+  var lista = document.getElementById('hist-lista');
+  lista.innerHTML = '<div class="hist-empty">Cargando...</div>';
+
+  var pSal = sbFetch('combustible_salidas?order=fecha.desc&limit=100').then(function(r) { return r.json(); });
+  var pIng = sbFetch('combustible_ingresos?order=fecha.desc&limit=100').then(function(r) { return r.json(); });
+
+  Promise.all([pSal, pIng]).then(function(results) {
+    var salidas  = (results[0] || []).map(function(r) { r._modo = 'salida';  return r; });
+    var ingresos = (results[1] || []).map(function(r) { r._modo = 'ingreso'; return r; });
+    historialData = salidas.concat(ingresos).sort(function(a, b) {
+      return new Date(b.fecha) - new Date(a.fecha);
+    });
+    renderHistorial();
+  }).catch(function() {
+    lista.innerHTML = '<div class="hist-empty">Error al cargar historial</div>';
+  });
+}
+
+function filtrarHist(f, el) {
+  document.querySelectorAll('.hist-chip').forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+  estado.histFiltro = f;
+  renderHistorial();
+}
+
+function renderHistorial() {
+  var hoy = new Date().toDateString();
+  var filtro = estado.histFiltro;
+  var datos = historialData.filter(function(r) {
+    if (filtro === 'hoy') return new Date(r.fecha).toDateString() === hoy;
+    if (filtro === 'diesel') return r.tipo === 'diesel';
+    if (filtro === 'gasolina') return r.tipo === 'gasolina';
+    return true;
+  });
+
+  var lista = document.getElementById('hist-lista');
+  if (!datos.length) {
+    lista.innerHTML = '<div class="hist-empty">Sin registros</div>';
+    return;
+  }
+
+  lista.innerHTML = datos.map(function(r) {
+    var es_salida = r._modo === 'salida';
+    var signo = es_salida ? '−' : '+';
+    var fecha = new Date(r.fecha);
+    var fechaStr = fecha.toLocaleDateString('es-CL') + ' ' + fecha.toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
+    var meta = es_salida
+      ? (r.persona + ' · ' + (r.destino || '') + (r.obs ? ' · ' + r.obs : ''))
+      : (r.persona + (r.proveedor ? ' · ' + r.proveedor : ''));
+    var tipo_label = r.tipo === 'diesel' ? '🛢️' : '⛽';
+    return '<div class="hist-item">' +
+      '<div class="hist-badge ' + r._modo + '">' + tipo_label + '</div>' +
+      '<div class="hist-info">' +
+        '<div class="hist-top">' +
+          '<div class="hist-titulo">' + (es_salida ? 'Salida' : 'Ingreso') + ' · ' + r.tipo + '</div>' +
+          '<div class="hist-qty ' + r._modo + '">' + signo + r.litros + ' L</div>' +
+        '</div>' +
+        '<div class="hist-meta">' + meta + '</div>' +
+        '<div class="hist-meta">' + fechaStr + '</div>' +
+      '</div>' +
+      '<button class="hist-del" onclick="eliminar(\'' + r.id + '\',\'' + r._modo + '\')" title="Eliminar">✕</button>' +
+    '</div>';
+  }).join('');
+}
+
+function eliminar(id, modo) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  var tabla = modo === 'salida' ? 'combustible_salidas' : 'combustible_ingresos';
+  sbFetch(tabla + '?id=eq.' + id, { method: 'DELETE', prefer: '' })
+    .then(function() {
+      historialData = historialData.filter(function(r) { return r.id !== id; });
+      renderHistorial();
+      cargarStock();
+      toast('Registro eliminado');
+    }).catch(function() {
+      toast('Error al eliminar', 'error');
+    });
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+cargarStock();
+</script>
+</body>
+</html>
